@@ -331,7 +331,7 @@ export default function DashboardPage() {
 
               {/* System Updates - Admin only */}
               {isAdmin && (
-                <Card className="col-span-1 bg-gradient-to-br from-primary to-accent text-primary-foreground border-none shadow-xl">
+                <Card className="col-span-2 bg-gradient-to-br from-primary to-accent text-primary-foreground border-none shadow-xl">
                   <CardHeader>
                     <CardTitle className="font-display flex items-center gap-2">
                       <AlertCircle className="w-5 h-5" />

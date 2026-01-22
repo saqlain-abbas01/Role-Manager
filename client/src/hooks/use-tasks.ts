@@ -6,6 +6,9 @@ import { useToast } from "@/hooks/use-toast";
 // Query key constants
 const TASKS_LIST_KEY = "tasks:list";
 const ANALYTICS_KEY = "analytics:list";
+const DASHBOARD_STATS_KEY = "dashboard:stats";
+const DASHBOARD_PROJECTS_KEY = "dashboard:projects";
+const DASHBOARD_TASKS_KEY = "dashboard:tasks";
 
 export function useTasks() {
   return useQuery({
@@ -35,6 +38,9 @@ export function useCreateTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [TASKS_LIST_KEY] });
       queryClient.invalidateQueries({ queryKey: [ANALYTICS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DASHBOARD_STATS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DASHBOARD_PROJECTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DASHBOARD_TASKS_KEY] });
       toast({ title: "Task Created", description: "Task has been assigned." });
     },
   });
@@ -85,6 +91,9 @@ export function useDeleteTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [TASKS_LIST_KEY] });
       queryClient.invalidateQueries({ queryKey: [ANALYTICS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DASHBOARD_STATS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DASHBOARD_PROJECTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DASHBOARD_TASKS_KEY] });
       toast({ title: "Task Deleted", description: "Task has been removed." });
     },
     onError: (error) => {

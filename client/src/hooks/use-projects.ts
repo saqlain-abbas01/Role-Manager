@@ -7,6 +7,9 @@ import { useToast } from "@/hooks/use-toast";
 const PROJECTS_LIST_KEY = "projects:list";
 const PROJECT_KEY = "project:";
 const ANALYTICS_KEY = "analytics:list";
+const DASHBOARD_STATS_KEY = "dashboard:stats";
+const DASHBOARD_PROJECTS_KEY = "dashboard:projects";
+const DASHBOARD_TASKS_KEY = "dashboard:tasks";
 
 export function useProjects() {
   return useQuery({
@@ -49,6 +52,9 @@ export function useCreateProject() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PROJECTS_LIST_KEY] });
       queryClient.invalidateQueries({ queryKey: [ANALYTICS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DASHBOARD_STATS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DASHBOARD_PROJECTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DASHBOARD_TASKS_KEY] });
       toast({ title: "Success", description: "Project created successfully" });
     },
     onError: (error) => {
@@ -86,6 +92,9 @@ export function useUpdateProject() {
       queryClient.invalidateQueries({ queryKey: [PROJECTS_LIST_KEY] });
       queryClient.invalidateQueries({ queryKey: [PROJECT_KEY] });
       queryClient.invalidateQueries({ queryKey: [ANALYTICS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DASHBOARD_STATS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DASHBOARD_PROJECTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DASHBOARD_TASKS_KEY] });
       toast({ title: "Success", description: "Project updated successfully" });
     },
     onError: (error) => {
@@ -115,6 +124,9 @@ export function useDeleteProject() {
       queryClient.invalidateQueries({ queryKey: [PROJECTS_LIST_KEY] });
       queryClient.invalidateQueries({ queryKey: [PROJECT_KEY] });
       queryClient.invalidateQueries({ queryKey: [ANALYTICS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DASHBOARD_STATS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DASHBOARD_PROJECTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [DASHBOARD_TASKS_KEY] });
       toast({ title: "Success", description: "Project deleted successfully" });
     },
     onError: (error) => {
