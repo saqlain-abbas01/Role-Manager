@@ -3,9 +3,13 @@ import { api, buildUrl } from "@shared/routes";
 import { type InsertTask, type Task } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
+// Query key constants
+const TASKS_LIST_KEY = "tasks:list";
+const ANALYTICS_KEY = "analytics:list";
+
 export function useTasks() {
   return useQuery({
-    queryKey: [api.tasks.list.path],
+    queryKey: [TASKS_LIST_KEY],
     queryFn: async () => {
       const res = await fetch(api.tasks.list.path);
       if (!res.ok) throw new Error("Failed to fetch tasks");
@@ -29,7 +33,8 @@ export function useCreateTask() {
       return api.tasks.create.responses[201].parse(await res.json());
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.tasks.list.path] });
+      queryClient.invalidateQueries({ queryKey: [TASKS_LIST_KEY] });
+      queryClient.invalidateQueries({ queryKey: [ANALYTICS_KEY] });
       toast({ title: "Task Created", description: "Task has been assigned." });
     },
   });
@@ -57,7 +62,8 @@ export function useUpdateTask() {
       return api.tasks.update.responses[200].parse(await res.json());
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.tasks.list.path] });
+      queryClient.invalidateQueries({ queryKey: [TASKS_LIST_KEY] });
+      queryClient.invalidateQueries({ queryKey: [ANALYTICS_KEY] });
       toast({ title: "Task Updated", description: "Changes have been saved." });
     },
   });
@@ -77,7 +83,8 @@ export function useDeleteTask() {
       return api.tasks.delete.responses[200].parse(await res.json());
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.tasks.list.path] });
+      queryClient.invalidateQueries({ queryKey: [TASKS_LIST_KEY] });
+      queryClient.invalidateQueries({ queryKey: [ANALYTICS_KEY] });
       toast({ title: "Task Deleted", description: "Task has been removed." });
     },
     onError: (error) => {

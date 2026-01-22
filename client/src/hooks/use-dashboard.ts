@@ -2,11 +2,16 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "./use-auth";
 import { api } from "@shared/routes";
 
+// Query key constants
+const DASHBOARD_STATS_KEY = "dashboard:stats";
+const DASHBOARD_PROJECTS_KEY = "dashboard:projects";
+const DASHBOARD_TASKS_KEY = "dashboard:tasks";
+
 export function useDashboardStats() {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: [api.dashboard.stats.path, user?.id],
+    queryKey: [DASHBOARD_STATS_KEY],
     queryFn: async () => {
       try {
         const res = await fetch(api.dashboard.stats.path);
@@ -30,7 +35,7 @@ export function useDashboardProjects() {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: [api.dashboard.projects.path, user?.id],
+    queryKey: [DASHBOARD_PROJECTS_KEY],
     queryFn: async () => {
       try {
         const res = await fetch(api.dashboard.projects.path);
@@ -54,7 +59,7 @@ export function useDashboardTasks() {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: [api.dashboard.tasks.path, user?.id],
+    queryKey: [DASHBOARD_TASKS_KEY],
     queryFn: async () => {
       try {
         const res = await fetch(api.dashboard.tasks.path);

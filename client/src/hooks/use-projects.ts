@@ -3,9 +3,14 @@ import { api, buildUrl } from "@shared/routes";
 import { type InsertProject, type Project } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
+// Query key constants
+const PROJECTS_LIST_KEY = "projects:list";
+const PROJECT_KEY = "project:";
+const ANALYTICS_KEY = "analytics:list";
+
 export function useProjects() {
   return useQuery({
-    queryKey: [api.projects.list.path],
+    queryKey: [PROJECTS_LIST_KEY],
     queryFn: async () => {
       const res = await fetch(api.projects.list.path);
       if (!res.ok) throw new Error("Failed to fetch projects");
@@ -16,7 +21,7 @@ export function useProjects() {
 
 export function useProject(id: string) {
   return useQuery({
-    queryKey: [api.projects.get.path, id],
+    queryKey: [PROJECT_KEY, id],
     queryFn: async () => {
       const url = buildUrl(api.projects.get.path, { id });
       const res = await fetch(url);
@@ -42,8 +47,8 @@ export function useCreateProject() {
       return api.projects.create.responses[201].parse(await res.json());
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.projects.list.path] });
-      queryClient.invalidateQueries({ queryKey: [api.analytics.get.path] });
+      queryClient.invalidateQueries({ queryKey: [PROJECTS_LIST_KEY] });
+      queryClient.invalidateQueries({ queryKey: [ANALYTICS_KEY] });
       toast({ title: "Success", description: "Project created successfully" });
     },
     onError: (error) => {
@@ -78,8 +83,9 @@ export function useUpdateProject() {
       return api.projects.update.responses[200].parse(await res.json());
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.projects.list.path] });
-      queryClient.invalidateQueries({ queryKey: [api.analytics.get.path] });
+      queryClient.invalidateQueries({ queryKey: [PROJECTS_LIST_KEY] });
+      queryClient.invalidateQueries({ queryKey: [PROJECT_KEY] });
+      queryClient.invalidateQueries({ queryKey: [ANALYTICS_KEY] });
       toast({ title: "Success", description: "Project updated successfully" });
     },
     onError: (error) => {
@@ -106,8 +112,9 @@ export function useDeleteProject() {
       return api.projects.delete.responses[200].parse(await res.json());
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.projects.list.path] });
-      queryClient.invalidateQueries({ queryKey: [api.analytics.get.path] });
+      queryClient.invalidateQueries({ queryKey: [PROJECTS_LIST_KEY] });
+      queryClient.invalidateQueries({ queryKey: [PROJECT_KEY] });
+      queryClient.invalidateQueries({ queryKey: [ANALYTICS_KEY] });
       toast({ title: "Success", description: "Project deleted successfully" });
     },
     onError: (error) => {

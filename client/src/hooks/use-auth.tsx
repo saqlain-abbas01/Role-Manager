@@ -17,6 +17,9 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+// Query key constant
+const AUTH_USER_KEY = "auth:user";
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
@@ -26,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     error,
     isLoading,
   } = useQuery({
-    queryKey: ["/api/user"],
+    queryKey: [AUTH_USER_KEY],
     queryFn: async () => {
       const res = await fetch("/api/user");
       if (res.status === 401) return null;
@@ -51,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return data;
     },
     onSuccess: (user: User) => {
-      queryClient.setQueryData(["/api/user"], user);
+      queryClient.setQueryData([AUTH_USER_KEY], user);
       toast({
         title: "Welcome back!",
         description: `Logged in as ${user.username}`,
@@ -83,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return data;
     },
     onSuccess: (user: User) => {
-      queryClient.setQueryData(["/api/user"], user);
+      queryClient.setQueryData([AUTH_USER_KEY], user);
       toast({
         title: "Account created!",
         description: `Welcome ${user.username}`,
@@ -103,7 +106,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await fetch("/api/logout", { method: "POST" });
     },
     onSuccess: () => {
-      queryClient.setQueryData(["/api/user"], null);
+      queryClient.setQueryData([AUTH_USER_KEY], null);
+      queryClient.invalidateQueries({ queryKey: [AUTH_USER_KEY] });
       setLocation("/auth");
       toast({
         title: "Logged out",
