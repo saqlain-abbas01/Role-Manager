@@ -1,29 +1,43 @@
-import { db } from "./db";
-import { users, projects, tasks, type User, type InsertUser, type Project, type InsertProject, type Task, type InsertTask } from "@shared/schema";
-import { eq, and } from "drizzle-orm";
+import {
+  UserModel,
+  ProjectModel,
+  TaskModel,
+  type User,
+  type InsertUser,
+  type Project,
+  type InsertProject,
+  type Task,
+  type InsertTask,
+} from "@shared/schema";
 
 export interface IStorage {
   // Users
-  getUser(id: number): Promise<User | undefined>;
+  getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByRole(role: string): Promise<User | undefined>;
+  getUsersByRole(role: string): Promise<User[] | undefined>;
   createUser(user: InsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
 
   // Projects
   getAllProjects(): Promise<Project[]>;
-  getProjectsByManager(managerId: number): Promise<Project[]>;
-  getProject(id: number): Promise<Project | undefined>;
+  getProjectsByManager(managerId: string): Promise<Project[]>;
+  getProject(id: string): Promise<Project | undefined>;
   createProject(project: InsertProject): Promise<Project>;
 
   // Tasks
   getAllTasks(): Promise<Task[]>; // For admin/analytics
-  getTasksByProject(projectId: number): Promise<Task[]>;
-  getTasksByUser(userId: number): Promise<Task[]>;
+  getTasksByProject(projectId: string): Promise<Task[]>;
+  getTasksByUser(userId: string): Promise<Task[]>;
+  getTasksByCreator(creatorId: string): Promise<Task[]>;
   createTask(task: InsertTask): Promise<Task>;
-  updateTask(id: number, updates: Partial<InsertTask>): Promise<Task | undefined>;
-  
+  updateTask(
+    id: string,
+    updates: Partial<InsertTask>,
+  ): Promise<Task | undefined>;
+
   // Session store helpers (optional, but good for completeness)
-  sessionStore: any; 
+  sessionStore: any;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -34,65 +48,85 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Users
-  async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+  async getUser(id: string): Promise<User | undefined> {
+    const user = await UserModel.findById(id);
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user;
+    const user = await UserModel.findOne({ username }).collation({
+      locale: "en",
+      strength: 2,
+    });
+
+    return user ?? undefined;
+  }
+
+  async getUserByRole(role: string): Promise<User | undefined> {
+    const user = await UserModel.findOne({ role });
+    return user || undefined;
   }
 
   async createUser(user: InsertUser): Promise<User> {
-    const [newUser] = await db.insert(users).values(user).returning();
-    return newUser;
+    return UserModel.create(user);
   }
 
   async getAllUsers(): Promise<User[]> {
-    return db.select().from(users);
+    return UserModel.find();
+  }
+
+  async getUsersByRole(role: string): Promise<User[] | undefined> {
+    const user = await UserModel.find({ role });
+    return user || undefined;
   }
 
   // Projects
   async getAllProjects(): Promise<Project[]> {
-    return db.select().from(projects);
+    return ProjectModel.find();
   }
 
-  async getProjectsByManager(managerId: number): Promise<Project[]> {
-    return db.select().from(projects).where(eq(projects.managerId, managerId));
+  async getProjectsByManager(managerId: string): Promise<Project[]> {
+    return ProjectModel.find({ managerId });
   }
 
-  async getProject(id: number): Promise<Project | undefined> {
-    const [project] = await db.select().from(projects).where(eq(projects.id, id));
-    return project;
+  async getProject(id: string): Promise<Project | undefined> {
+    const project = await ProjectModel.findById(id);
+    return project || undefined;
   }
 
   async createProject(project: InsertProject): Promise<Project> {
-    const [newProject] = await db.insert(projects).values(project).returning();
-    return newProject;
+    return ProjectModel.create(project);
   }
 
   // Tasks
   async getAllTasks(): Promise<Task[]> {
-    return db.select().from(tasks);
+    return TaskModel.find();
   }
 
-  async getTasksByProject(projectId: number): Promise<Task[]> {
-    return db.select().from(tasks).where(eq(tasks.projectId, projectId));
+  async getTasksByProject(projectId: string): Promise<Task[]> {
+    return TaskModel.find({ projectId });
   }
 
-  async getTasksByUser(userId: number): Promise<Task[]> {
-    return db.select().from(tasks).where(eq(tasks.assignedToId, userId));
+  async getTasksByUser(userId: string): Promise<Task[]> {
+    return TaskModel.find({ assignedToId: userId });
+  }
+
+  async getTasksByCreator(creatorId: string): Promise<Task[]> {
+    const projects = await ProjectModel.find({ managerId: creatorId });
+    const projectIds = projects.map((p) => p._id.toString());
+    return TaskModel.find({ projectId: { $in: projectIds } });
   }
 
   async createTask(task: InsertTask): Promise<Task> {
-    const [newTask] = await db.insert(tasks).values(task).returning();
-    return newTask;
+    return TaskModel.create(task);
   }
 
-  async updateTask(id: number, updates: Partial<InsertTask>): Promise<Task | undefined> {
-    const [updatedTask] = await db.update(tasks).set(updates).where(eq(tasks.id, id)).returning();
-    return updatedTask;
+  async updateTask(
+    id: string,
+    updates: Partial<InsertTask>,
+  ): Promise<Task | undefined> {
+    const task = await TaskModel.findByIdAndUpdate(id, updates, { new: true });
+    return task || undefined;
   }
 }
 

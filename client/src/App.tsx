@@ -15,48 +15,74 @@ import UsersPage from "@/pages/users-page";
 import NotFound from "@/pages/not-found";
 import { Loader2 } from "lucide-react";
 
-// Wrapper for protected routes
-function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
-  const { user, isLoading } = useAuth();
+// Wrapper for protected routes with role-based access
+function ProtectedRoute({
+  component: Component,
+  requiredRoles,
+}: {
+  component: React.ComponentType;
+  requiredRoles?: string[];
+}) {
+  function RouteComponent() {
+    const { user, isLoading } = useAuth();
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center min-h-screen bg-background">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      );
+    }
+
+    if (!user) {
+      return <Redirect to="/auth" />;
+    }
+
+    if (requiredRoles && !requiredRoles.includes(user.role)) {
+      return <Redirect to="/" />;
+    }
+
+    return <Component />;
   }
 
-  if (!user) {
-    return <Redirect to="/auth" />;
-  }
-
-  return <Component />;
+  return <RouteComponent />;
 }
 
 function Router() {
   return (
     <Switch>
       <Route path="/auth" component={AuthPage} />
-      
+
       {/* Protected Routes */}
       <Route path="/">
-        <ProtectedRoute component={DashboardPage} />
+        <ProtectedRoute
+          component={DashboardPage}
+          requiredRoles={["admin", "moderator"]}
+        />
       </Route>
       <Route path="/projects">
-        <ProtectedRoute component={ProjectsPage} />
+        <ProtectedRoute
+          component={ProjectsPage}
+          requiredRoles={["admin", "moderator"]}
+        />
       </Route>
       <Route path="/projects/:id">
-        <ProtectedRoute component={ProjectDetailsPage} />
+        <ProtectedRoute
+          component={ProjectDetailsPage}
+          requiredRoles={["admin", "moderator"]}
+        />
       </Route>
       <Route path="/tasks">
-        <ProtectedRoute component={TasksPage} />
+        <ProtectedRoute
+          component={TasksPage}
+          requiredRoles={["user", "admin", "moderator"]}
+        />
       </Route>
       <Route path="/analytics">
-        <ProtectedRoute component={AnalyticsPage} />
+        <ProtectedRoute component={AnalyticsPage} requiredRoles={["admin"]} />
       </Route>
       <Route path="/users">
-        <ProtectedRoute component={UsersPage} />
+        <ProtectedRoute component={UsersPage} requiredRoles={["admin"]} />
       </Route>
 
       <Route component={NotFound} />

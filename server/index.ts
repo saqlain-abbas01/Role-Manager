@@ -1,7 +1,14 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { connectDB } from "./db";
+import { setupAuth } from "./auth";
+import usersRouter from "./routes/users.routes";
+import projectsRouter from "./routes/projects.routes";
+import tasksRouter from "./routes/tasks.routes";
+import analyticsRouter from "./routes/analytics.routes";
+import dashboardRouter from "./routes/dashboard.routes";
+import { seedDatabase } from "./services/seed.service";
 
 const app = express();
 const httpServer = createServer(app);
@@ -60,7 +67,19 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  await registerRoutes(httpServer, app);
+  await connectDB();
+
+  // Setup Authentication
+  setupAuth(app);
+
+  // Register API routes
+  app.use("/api", usersRouter);
+  app.use("/api", projectsRouter);
+  app.use("/api", tasksRouter);
+  app.use("/api", analyticsRouter);
+  app.use("/api", dashboardRouter);
+
+  await seedDatabase();
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

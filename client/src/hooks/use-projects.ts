@@ -14,7 +14,7 @@ export function useProjects() {
   });
 }
 
-export function useProject(id: number) {
+export function useProject(id: string) {
   return useQuery({
     queryKey: [api.projects.get.path, id],
     queryFn: async () => {
@@ -30,7 +30,7 @@ export function useProject(id: number) {
 export function useCreateProject() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+
   return useMutation({
     mutationFn: async (data: InsertProject) => {
       const res = await fetch(api.projects.create.path, {
@@ -46,10 +46,10 @@ export function useCreateProject() {
       toast({ title: "Success", description: "Project created successfully" });
     },
     onError: (error) => {
-      toast({ 
-        title: "Error", 
+      toast({
+        title: "Error",
         description: error.message,
-        variant: "destructive"
+        variant: "destructive",
       });
     },
   });

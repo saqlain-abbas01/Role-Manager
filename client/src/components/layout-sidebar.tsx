@@ -1,14 +1,14 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { 
-  LayoutDashboard, 
-  FolderKanban, 
-  CheckSquare, 
-  Users, 
-  LogOut, 
+import {
+  LayoutDashboard,
+  FolderKanban,
+  CheckSquare,
+  Users,
+  LogOut,
   BarChart3,
   ShieldCheck,
-  UserCircle
+  UserCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -16,15 +16,21 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 export function Sidebar() {
   const [location] = useLocation();
   const { user, logoutMutation } = useAuth();
-  
-  const navItems = [
-    { href: "/", icon: LayoutDashboard, label: "Dashboard" },
-    { href: "/projects", icon: FolderKanban, label: "Projects" },
-    { href: "/tasks", icon: CheckSquare, label: "My Tasks" },
-  ];
 
-  // Role based additions
-  if (user?.role === "admin") {
+  const navItems = [];
+
+  // Role-based navigation
+  if (user?.role === "user") {
+    // Users only see their tasks
+    navItems.push({ href: "/tasks", icon: CheckSquare, label: "My Tasks" });
+  } else if (user?.role === "moderator") {
+    // Moderators see dashboard and projects
+    navItems.push({ href: "/", icon: LayoutDashboard, label: "Dashboard" });
+    navItems.push({ href: "/projects", icon: FolderKanban, label: "Projects" });
+  } else if (user?.role === "admin") {
+    // Admins see everything
+    navItems.push({ href: "/", icon: LayoutDashboard, label: "Dashboard" });
+    navItems.push({ href: "/projects", icon: FolderKanban, label: "Projects" });
     navItems.push({ href: "/analytics", icon: BarChart3, label: "Analytics" });
     navItems.push({ href: "/users", icon: Users, label: "User Management" });
   }
@@ -38,7 +44,9 @@ export function Sidebar() {
           </div>
           <div>
             <h1 className="font-display text-xl font-bold">TaskFlow</h1>
-            <p className="text-xs text-muted-foreground font-medium">Project Manager</p>
+            <p className="text-xs text-muted-foreground font-medium">
+              Project Manager
+            </p>
           </div>
         </div>
       </div>
@@ -48,16 +56,19 @@ export function Sidebar() {
           const isActive = location === item.href;
           return (
             <Link key={item.href} href={item.href}>
-              <div 
+              <div
                 className={`
                   flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer group
-                  ${isActive 
-                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" 
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ${
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }
                 `}
               >
-                <item.icon className={`h-5 w-5 ${isActive ? "" : "group-hover:scale-110 transition-transform"}`} />
+                <item.icon
+                  className={`h-5 w-5 ${isActive ? "" : "group-hover:scale-110 transition-transform"}`}
+                />
                 <span className="font-medium">{item.label}</span>
               </div>
             </Link>
@@ -74,12 +85,14 @@ export function Sidebar() {
           </Avatar>
           <div className="overflow-hidden">
             <p className="text-sm font-semibold truncate">{user?.fullName}</p>
-            <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
+            <p className="text-xs text-muted-foreground capitalize">
+              {user?.role}
+            </p>
           </div>
         </div>
-        
-        <Button 
-          variant="outline" 
+
+        <Button
+          variant="outline"
           className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 transition-all"
           onClick={() => logoutMutation.mutate()}
         >

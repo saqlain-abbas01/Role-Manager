@@ -1,5 +1,12 @@
 import { z } from "zod";
-import { insertUserSchema, insertProjectSchema, insertTaskSchema, users, projects, tasks } from "./schema";
+import {
+  insertUserSchema,
+  insertProjectSchema,
+  insertTaskSchema,
+  User,
+  Project,
+  Task,
+} from "./schema";
 
 export const errorSchemas = {
   validation: z.object({
@@ -21,7 +28,7 @@ export const api = {
       path: "/api/register",
       input: insertUserSchema,
       responses: {
-        201: z.custom<typeof users.$inferSelect>(),
+        201: z.custom<User>(),
         400: errorSchemas.validation,
       },
     },
@@ -30,7 +37,7 @@ export const api = {
       path: "/api/login",
       input: z.object({ username: z.string(), password: z.string() }),
       responses: {
-        200: z.custom<typeof users.$inferSelect>(),
+        200: z.custom<User>(),
         401: errorSchemas.unauthorized,
       },
     },
@@ -45,7 +52,7 @@ export const api = {
       method: "GET" as const,
       path: "/api/user",
       responses: {
-        200: z.custom<typeof users.$inferSelect>(),
+        200: z.custom<User>(),
         401: errorSchemas.unauthorized,
       },
     },
@@ -55,7 +62,14 @@ export const api = {
       method: "GET" as const,
       path: "/api/users",
       responses: {
-        200: z.array(z.custom<typeof users.$inferSelect>()),
+        200: z.array(z.custom<User>()),
+      },
+    },
+    listRole: {
+      method: "GET" as const,
+      path: "/api/users/role/user",
+      responses: {
+        200: z.array(z.custom<User>()),
       },
     },
   },
@@ -64,7 +78,7 @@ export const api = {
       method: "GET" as const,
       path: "/api/projects",
       responses: {
-        200: z.array(z.custom<typeof projects.$inferSelect>()),
+        200: z.array(z.custom<Project>()),
       },
     },
     create: {
@@ -72,7 +86,7 @@ export const api = {
       path: "/api/projects",
       input: insertProjectSchema,
       responses: {
-        201: z.custom<typeof projects.$inferSelect>(),
+        201: z.custom<Project>(),
         400: errorSchemas.validation,
       },
     },
@@ -80,7 +94,7 @@ export const api = {
       method: "GET" as const,
       path: "/api/projects/:id",
       responses: {
-        200: z.custom<typeof projects.$inferSelect>(),
+        200: z.custom<Project>(),
         404: errorSchemas.notFound,
       },
     },
@@ -90,7 +104,7 @@ export const api = {
       method: "GET" as const,
       path: "/api/tasks",
       responses: {
-        200: z.array(z.custom<typeof tasks.$inferSelect>()),
+        200: z.array(z.custom<Task>()),
       },
     },
     create: {
@@ -98,7 +112,7 @@ export const api = {
       path: "/api/tasks",
       input: insertTaskSchema,
       responses: {
-        201: z.custom<typeof tasks.$inferSelect>(),
+        201: z.custom<Task>(),
         400: errorSchemas.validation,
       },
     },
@@ -110,7 +124,7 @@ export const api = {
         isVerified: z.boolean().optional(),
       }),
       responses: {
-        200: z.custom<typeof tasks.$inferSelect>(),
+        200: z.custom<Task>(),
         404: errorSchemas.notFound,
       },
     },
@@ -121,16 +135,52 @@ export const api = {
       path: "/api/analytics",
       responses: {
         200: z.object({
-          projectsByStatus: z.array(z.object({ name: z.string(), value: z.number() })),
-          tasksByStatus: z.array(z.object({ name: z.string(), value: z.number() })),
-          tasksByUser: z.array(z.object({ name: z.string(), resolved: z.number(), open: z.number() })),
+          projectsByStatus: z.array(
+            z.object({ name: z.string(), value: z.number() }),
+          ),
+          tasksByStatus: z.array(
+            z.object({ name: z.string(), value: z.number() }),
+          ),
+          tasksByUser: z.array(
+            z.object({
+              name: z.string(),
+              resolved: z.number(),
+              open: z.number(),
+            }),
+          ),
         }),
+      },
+    },
+  },
+  dashboard: {
+    stats: {
+      method: "GET" as const,
+      path: "/api/dashboard/stats",
+      responses: {
+        200: z.record(z.number()),
+      },
+    },
+    projects: {
+      method: "GET" as const,
+      path: "/api/dashboard/projects",
+      responses: {
+        200: z.array(z.custom<Project>()),
+      },
+    },
+    tasks: {
+      method: "GET" as const,
+      path: "/api/dashboard/tasks",
+      responses: {
+        200: z.array(z.custom<Task>()),
       },
     },
   },
 };
 
-export function buildUrl(path: string, params?: Record<string, string | number>): string {
+export function buildUrl(
+  path: string,
+  params?: Record<string, string | number>,
+): string {
   let url = path;
   if (params) {
     Object.entries(params).forEach(([key, value]) => {

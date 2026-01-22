@@ -40,7 +40,13 @@ export function useUpdateTask() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: number } & Partial<InsertTask> & { resolutionNotes?: string, isVerified?: boolean }) => {
+    mutationFn: async ({
+      id,
+      ...updates
+    }: { id: string } & Partial<InsertTask> & {
+        resolutionNotes?: string;
+        isVerified?: boolean;
+      }) => {
       const url = buildUrl(api.tasks.update.path, { id });
       const res = await fetch(url, {
         method: "PATCH",

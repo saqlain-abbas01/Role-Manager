@@ -43,11 +43,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
       });
+      const data = await res.json();
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Login failed");
+        console.log("Login error response:", data);
+        throw new Error(data.message || "Login failed");
       }
-      return await res.json();
+      return data;
     },
     onSuccess: (user: User) => {
       queryClient.setQueryData(["/api/user"], user);
@@ -55,6 +56,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Welcome back!",
         description: `Logged in as ${user.username}`,
       });
+      if (user.role === "user") {
+        setLocation("/tasks");
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -72,11 +76,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
       });
+      const data = await res.json();
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Registration failed");
+        throw new Error(data.message || "Registration failed");
       }
-      return await res.json();
+      return data;
     },
     onSuccess: (user: User) => {
       queryClient.setQueryData(["/api/user"], user);

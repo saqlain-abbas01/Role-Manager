@@ -14,18 +14,33 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Loader2, Plus } from "lucide-react";
 
 interface CreateTaskDialogProps {
-  projectId: number;
+  projectId: string;
 }
 
 export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
   const [open, setOpen] = useState(false);
   const createTask = useCreateTask();
   const { data: users } = useUsers();
+
+  console.log("Users fetched for task assignment:", users);
 
   const form = useForm<InsertTask>({
     resolver: zodResolver(insertTaskSchema),
@@ -59,7 +74,10 @@ export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
           <DialogTitle className="font-display">Add Task</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4 pt-4"
+          >
             <FormField
               control={form.control}
               name="title"
@@ -73,7 +91,7 @@ export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="description"
@@ -81,10 +99,10 @@ export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Details about what needs to be done..." 
+                    <Textarea
+                      placeholder="Details about what needs to be done..."
                       className="resize-none"
-                      {...field} 
+                      {...field}
                       value={field.value || ""}
                     />
                   </FormControl>
@@ -99,8 +117,8 @@ export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Assign To</FormLabel>
-                  <Select 
-                    onValueChange={(val) => field.onChange(parseInt(val))} 
+                  <Select
+                    onValueChange={(val) => field.onChange(val)}
                     value={field.value?.toString()}
                   >
                     <FormControl>
@@ -110,7 +128,7 @@ export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
                     </FormControl>
                     <SelectContent>
                       {users?.map((user) => (
-                        <SelectItem key={user.id} value={user.id.toString()}>
+                        <SelectItem key={user.id} value={user.id as string}>
                           {user.fullName} ({user.role})
                         </SelectItem>
                       ))}
@@ -123,7 +141,9 @@ export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
 
             <div className="flex justify-end pt-2">
               <Button type="submit" disabled={createTask.isPending}>
-                {createTask.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {createTask.isPending && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Create Task
               </Button>
             </div>
