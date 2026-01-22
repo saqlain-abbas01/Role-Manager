@@ -28,6 +28,7 @@ export function useDashboardStats() {
       }
     },
     enabled: !!user,
+    staleTime: 0,
   });
 }
 
@@ -52,6 +53,7 @@ export function useDashboardProjects() {
       }
     },
     enabled: !!user,
+    staleTime: 0,
   });
 }
 
@@ -76,5 +78,6 @@ export function useDashboardTasks() {
       }
     },
     enabled: !!user,
+    staleTime: 0,
   });
 }

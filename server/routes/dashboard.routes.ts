@@ -21,14 +21,18 @@ router.get("/dashboard/stats", requireAuth, async (req, res) => {
       const allTasks = await storage.getAllTasks();
       const allUsers = await storage.getAllUsers();
 
+      // Filter out tasks whose projects no longer exist
+      const projectIds = new Set(allProjects.map((p) => p._id?.toString()));
+      const validTasks = allTasks.filter((t) => projectIds.has(t.projectId));
+
       const stats = {
         totalProjects: allProjects.length,
-        totalTasks: allTasks.length,
+        totalTasks: validTasks.length,
         activeUsers: allUsers.filter((u) => u.role !== ROLES.ADMIN).length,
-        completedTasks: allTasks.filter(
+        completedTasks: validTasks.filter(
           (t) => t.status === "resolved" || t.status === "closed",
         ).length,
-        pendingTasks: allTasks.filter(
+        pendingTasks: validTasks.filter(
           (t) => t.status === "open" || t.status === "in_progress",
         ).length,
       };
@@ -40,14 +44,18 @@ router.get("/dashboard/stats", requireAuth, async (req, res) => {
       );
       const myTasks = await storage.getTasksByCreator(user._id.toString());
 
+      // Filter out tasks whose projects no longer exist
+      const projectIds = new Set(myProjects.map((p) => p._id?.toString()));
+      const validTasks = myTasks.filter((t) => projectIds.has(t.projectId));
+
       const stats = {
         myProjects: myProjects.length,
-        myTasks: myTasks.length,
+        myTasks: validTasks.length,
         activeProjects: myProjects.filter((p) => p.isActive).length,
-        completedTasks: myTasks.filter(
+        completedTasks: validTasks.filter(
           (t) => t.status === "resolved" || t.status === "closed",
         ).length,
-        pendingTasks: myTasks.filter(
+        pendingTasks: validTasks.filter(
           (t) => t.status === "open" || t.status === "in_progress",
         ).length,
       };
@@ -102,16 +110,24 @@ router.get("/dashboard/projects", requireAuth, async (req, res) => {
 router.get("/dashboard/tasks", requireAuth, async (req, res) => {
   try {
     const user = req.user as any;
+    const allProjects = await storage.getAllProjects();
+    const projectIds = new Set(allProjects.map((p) => p._id?.toString()));
 
     if (user.role === ROLES.ADMIN) {
       const tasks = await storage.getAllTasks();
-      return res.json(tasks);
+      // Filter out tasks whose projects no longer exist
+      const validTasks = tasks.filter((t) => projectIds.has(t.projectId));
+      return res.json(validTasks);
     } else if (user.role === ROLES.MODERATOR) {
       const tasks = await storage.getTasksByCreator(user._id.toString());
-      return res.json(tasks);
+      // Filter out tasks whose projects no longer exist
+      const validTasks = tasks.filter((t) => projectIds.has(t.projectId));
+      return res.json(validTasks);
     } else {
       const tasks = await storage.getTasksByUser(user._id.toString());
-      return res.json(tasks);
+      // Filter out tasks whose projects no longer exist
+      const validTasks = tasks.filter((t) => projectIds.has(t.projectId));
+      return res.json(validTasks);
     }
   } catch (error) {
     console.error("Dashboard tasks error:", error);

@@ -12,5 +12,6 @@ export function useAnalytics() {
       if (!res.ok) throw new Error("Failed to fetch analytics");
       return api.analytics.get.responses[200].parse(await res.json());
     },
+    staleTime: 0,
   });
 }

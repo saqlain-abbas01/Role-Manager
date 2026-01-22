@@ -128,6 +128,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteProject(id: string): Promise<boolean> {
+    // Delete all tasks associated with this project
+    await TaskModel.deleteMany({ projectId: id });
+    // Then delete the project
     const result = await ProjectModel.findByIdAndDelete(id);
     return !!result;
   }

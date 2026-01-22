@@ -19,6 +19,7 @@ export function useProjects() {
       if (!res.ok) throw new Error("Failed to fetch projects");
       return api.projects.list.responses[200].parse(await res.json());
     },
+    staleTime: 0,
   });
 }
 
@@ -32,6 +33,7 @@ export function useProject(id: string) {
       return api.projects.get.responses[200].parse(await res.json());
     },
     enabled: !!id,
+    staleTime: 0,
   });
 }
 

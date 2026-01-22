@@ -18,6 +18,7 @@ export function useTasks() {
       if (!res.ok) throw new Error("Failed to fetch tasks");
       return api.tasks.list.responses[200].parse(await res.json());
     },
+    staleTime: 0,
   });
 }
 

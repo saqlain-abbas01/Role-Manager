@@ -12,6 +12,10 @@ export const getAnalytics = async (req: Request, res: Response) => {
 
     const nonAdminUsers = allUsers.filter((u) => u.role !== ROLES.ADMIN);
 
+    // Filter out tasks whose projects no longer exist
+    const projectIds = new Set(allProjects.map((p) => p._id?.toString()));
+    const validTasks = allTasks.filter((t) => projectIds.has(t.projectId));
+
     const projectsByStatus = [
       { name: "Active", value: allProjects.filter((p) => p.isActive).length },
       {
@@ -22,11 +26,11 @@ export const getAnalytics = async (req: Request, res: Response) => {
 
     const tasksByStatus = Object.values(TASK_STATUS).map((status) => ({
       name: status,
-      value: allTasks.filter((t) => t.status === status).length,
+      value: validTasks.filter((t) => t.status === status).length,
     }));
 
     const tasksByUser = nonAdminUsers.map((u) => {
-      const userTasks = allTasks.filter(
+      const userTasks = validTasks.filter(
         (t) => t.assignedToId === u._id?.toString(),
       );
       return {
