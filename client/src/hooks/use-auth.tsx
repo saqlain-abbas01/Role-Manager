@@ -54,6 +54,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return data;
     },
     onSuccess: (user: User) => {
+      // Clear old cached data from previous user
+      queryClient.removeQueries({ queryKey: ["projects:list"] });
+      queryClient.removeQueries({ queryKey: ["project:"] });
+      queryClient.removeQueries({ queryKey: ["tasks:list"] });
+      queryClient.removeQueries({ queryKey: ["analytics:list"] });
+      queryClient.removeQueries({ queryKey: ["dashboard:stats"] });
+      queryClient.removeQueries({ queryKey: ["dashboard:projects"] });
+      queryClient.removeQueries({ queryKey: ["dashboard:tasks"] });
+
+      // Set new user data
       queryClient.setQueryData([AUTH_USER_KEY], user);
       toast({
         title: "Welcome back!",
@@ -106,8 +116,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await fetch("/api/logout", { method: "POST" });
     },
     onSuccess: () => {
+      // Clear auth user
       queryClient.setQueryData([AUTH_USER_KEY], null);
-      queryClient.invalidateQueries({ queryKey: [AUTH_USER_KEY] });
+
+      // Clear all user-dependent cached data
+      queryClient.removeQueries({ queryKey: ["projects:list"] });
+      queryClient.removeQueries({ queryKey: ["project:"] });
+      queryClient.removeQueries({ queryKey: ["tasks:list"] });
+      queryClient.removeQueries({ queryKey: ["analytics:list"] });
+      queryClient.removeQueries({ queryKey: ["dashboard:stats"] });
+      queryClient.removeQueries({ queryKey: ["dashboard:projects"] });
+      queryClient.removeQueries({ queryKey: ["dashboard:tasks"] });
+
       setLocation("/auth");
       toast({
         title: "Logged out",
