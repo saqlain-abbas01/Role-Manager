@@ -34,40 +34,6 @@ Role Manager Hub is a modern, full-stack web application built with Express, Rea
 - **Real-time Updates**: WebSocket support for live updates
 - **Database Integration**: MongoDB for persistent data storage
 
-## Project Structure
-
-```
-Role-Manager-Hub/
-├── client/                 # React frontend application
-│   ├── src/
-│   │   ├── components/    # Reusable UI components
-│   │   ├── pages/         # Page components
-│   │   ├── hooks/         # Custom React hooks
-│   │   ├── lib/           # Utility functions and libraries
-│   │   ├── App.tsx        # Main app component
-│   │   └── main.tsx       # React entry point
-│   ├── public/            # Static assets
-│   └── index.html         # HTML template
-├── server/                 # Express backend application
-│   ├── controllers/       # Request handlers
-│   ├── routes/            # API route definitions
-│   ├── services/          # Business logic
-│   ├── middleware/        # Express middleware
-│   ├── auth.ts            # Authentication setup
-│   ├── db.ts              # Database connection
-│   ├── static.ts          # Static file serving
-│   └── index.ts           # Server entry point
-├── shared/                 # Shared types and utilities
-│   ├── routes.ts          # Route definitions
-│   └── schema.ts          # Data schemas
-├── script/                 # Build and utility scripts
-├── package.json           # Project dependencies
-├── tsconfig.json          # TypeScript configuration
-├── vite.config.ts         # Vite build configuration
-├── tailwind.config.ts     # Tailwind CSS configuration
-└── drizzle.config.ts      # Database migration config
-```
-
 ## Prerequisites
 
 Before running this project, ensure you have the following installed:
@@ -124,42 +90,12 @@ npm run dev
 
 This command will:
 
-- Start the Express server on `http://localhost:5173`
+- Start the Express server on `http://localhost:5000`
 - Start the Vite development server for the React frontend
 - Enable hot module replacement for both frontend and backend
 - Seed the database with initial data
 
-The application will be accessible at `http://localhost:5173`
-
-### Type Checking
-
-Verify TypeScript types without building:
-
-```bash
-npm run check
-```
-
-## Building for Production
-
-### Build the Project
-
-```bash
-npm run build
-```
-
-This command will:
-
-- Build the React frontend for production
-- Bundle and minify the Express server
-- Create optimized output in the `dist/` directory
-
-### Start Production Server
-
-```bash
-npm start
-```
-
-This will run the compiled production build.
+The application will be accessible at `http://localhost:5000`
 
 ## Project Architecture
 
@@ -179,7 +115,6 @@ This will run the compiled production build.
 - **Mongoose**: MongoDB object modeling
 - **Passport**: Authentication middleware
 - **Express Session**: Session management
-- **WebSockets**: Real-time communication
 
 ### Database
 
@@ -264,67 +199,5 @@ This will run the compiled production build.
 | --------------- | ---------------------------------------- |
 | `npm run dev`   | Start development server with hot reload |
 | `npm run build` | Build project for production             |
-| `npm start`     | Start production server                  |
-| `npm run check` | Run TypeScript type checking             |
-
-## Directory Descriptions
-
-### `/client`
-
-Contains the React frontend application with all UI components, pages, hooks, and styling.
-
-### `/server`
-
-Contains the Express backend with controllers, routes, services, middleware, and database setup.
-
-### `/shared`
-
-Contains TypeScript interfaces, types, and schemas shared between frontend and backend.
-
-### `/script`
-
-Contains utility scripts for building and project setup.
-
-## Common Issues and Solutions
-
-### Port Already in Use
-
-If port 5173 is already in use, modify the Vite config or kill the process:
-
-```bash
-# Windows
-netstat -ano | findstr :5173
-taskkill /PID <PID> /F
-```
-
-### MongoDB Connection Error
-
-- Ensure MongoDB is running locally or check your MongoDB Atlas connection string
-- Verify `MONGODB_URI` in `.env` file
-- Check network connectivity for cloud MongoDB
-
-### Dependencies Installation Issues
-
-Try clearing the cache and reinstalling:
-
-```bash
-rm -rf node_modules package-lock.json
-npm install
-```
-
-## Contributing
-
-When contributing to this project:
-
-1. Create a new branch for your feature
-2. Follow the existing code style
-3. Write TypeScript with proper type annotations
-4. Test your changes before submitting
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
----
 
 **Last Updated**: January 2026
