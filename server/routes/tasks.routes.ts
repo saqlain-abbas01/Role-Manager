@@ -3,6 +3,7 @@ import {
   getTasksList,
   createTask,
   updateTask,
+  deleteTask,
 } from "../controllers/tasks.controller";
 import { requireAuth, requireRole } from "../middleware/auth.middleware";
 import { ROLES } from "@shared/schema";
@@ -17,5 +18,6 @@ router.post(
   createTask,
 );
 router.patch("/tasks/:id", requireAuth, updateTask);
+router.delete("/tasks/:id", requireAuth, deleteTask);
 
 export default router;

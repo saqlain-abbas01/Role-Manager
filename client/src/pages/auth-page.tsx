@@ -57,7 +57,13 @@ export default function AuthPage() {
 
   useEffect(() => {
     if (user) {
-      setLocation("/");
+      // Role-specific redirects are handled in loginMutation.onSuccess
+      // Only redirect if not already on auth page or if user is truly logged in
+      if (user.role === "user") {
+        setLocation("/tasks");
+      } else if (user.role === "admin" || user.role === "moderator") {
+        setLocation("/");
+      }
     }
   }, [user, setLocation]);
 
@@ -248,7 +254,7 @@ export default function AuthPage() {
                                 <SelectValue placeholder="Select a role" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
+                            <SelectContent className="bg-white">
                               <SelectItem value={ROLES.USER}>User</SelectItem>
                               <SelectItem value={ROLES.MODERATOR}>
                                 Moderator

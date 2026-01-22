@@ -98,6 +98,25 @@ export const api = {
         404: errorSchemas.notFound,
       },
     },
+    update: {
+      method: "PATCH" as const,
+      path: "/api/projects/:id",
+      input: insertProjectSchema.partial(),
+      responses: {
+        200: z.custom<Project>(),
+        403: errorSchemas.unauthorized,
+        404: errorSchemas.notFound,
+      },
+    },
+    delete: {
+      method: "DELETE" as const,
+      path: "/api/projects/:id",
+      responses: {
+        200: z.object({ message: z.string() }),
+        403: errorSchemas.unauthorized,
+        404: errorSchemas.notFound,
+      },
+    },
   },
   tasks: {
     list: {
@@ -125,6 +144,15 @@ export const api = {
       }),
       responses: {
         200: z.custom<Task>(),
+        404: errorSchemas.notFound,
+      },
+    },
+    delete: {
+      method: "DELETE" as const,
+      path: "/api/tasks/:id",
+      responses: {
+        200: z.object({ message: z.string() }),
+        403: errorSchemas.unauthorized,
         404: errorSchemas.notFound,
       },
     },

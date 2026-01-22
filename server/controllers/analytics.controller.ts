@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { storage } from "../storage";
-import { TASK_STATUS } from "@shared/schema";
+import { TASK_STATUS, ROLES } from "@shared/schema";
 
 export const getAnalytics = async (req: Request, res: Response) => {
   try {
@@ -9,6 +9,8 @@ export const getAnalytics = async (req: Request, res: Response) => {
       storage.getAllTasks(),
       storage.getAllUsers(),
     ]);
+
+    const nonAdminUsers = allUsers.filter((u) => u.role !== ROLES.ADMIN);
 
     const projectsByStatus = [
       { name: "Active", value: allProjects.filter((p) => p.isActive).length },
@@ -23,7 +25,7 @@ export const getAnalytics = async (req: Request, res: Response) => {
       value: allTasks.filter((t) => t.status === status).length,
     }));
 
-    const tasksByUser = allUsers.map((u) => {
+    const tasksByUser = nonAdminUsers.map((u) => {
       const userTasks = allTasks.filter(
         (t) => t.assignedToId === u._id?.toString(),
       );

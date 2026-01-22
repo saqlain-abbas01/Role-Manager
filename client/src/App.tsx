@@ -90,13 +90,21 @@ function Router() {
   );
 }
 
+function AppContent() {
+  return (
+    <>
+      <Toaster />
+      <Router />
+    </>
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
-          <Toaster />
-          <Router />
+          <AppContent />
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertTaskSchema, type InsertTask } from "@shared/schema";
-import { useCreateTask } from "@/hooks/use-tasks";
+import { insertTaskSchema, type InsertTask, type Task } from "@shared/schema";
+import { useCreateTask, useUpdateTask } from "@/hooks/use-tasks";
 import { useUsers } from "@/hooks/use-users";
 import {
   Dialog,
@@ -29,49 +29,77 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, Edit2 } from "lucide-react";
 
 interface CreateTaskDialogProps {
   projectId: string;
+  task?: Task;
+  trigger?: React.ReactNode;
 }
 
-export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
+export function CreateTaskDialog({
+  projectId,
+  task,
+  trigger,
+}: CreateTaskDialogProps) {
   const [open, setOpen] = useState(false);
   const createTask = useCreateTask();
+  const updateTask = useUpdateTask();
   const { data: users } = useUsers();
+
+  const isEditing = !!task;
 
   console.log("Users fetched for task assignment:", users);
 
   const form = useForm<InsertTask>({
     resolver: zodResolver(insertTaskSchema),
     defaultValues: {
-      projectId,
-      title: "",
-      description: "",
-      status: "open",
+      projectId: task?.projectId || projectId,
+      title: task?.title || "",
+      description: task?.description || "",
+      status: task?.status || "open",
+      assignedToId: task?.assignedToId || "",
     },
   });
 
   const onSubmit = (data: InsertTask) => {
-    createTask.mutate(data, {
-      onSuccess: () => {
-        setOpen(false);
-        form.reset();
-      },
-    });
+    if (isEditing) {
+      updateTask.mutate(
+        { id: task.id as string, ...data },
+        {
+          onSuccess: () => {
+            setOpen(false);
+            form.reset();
+          },
+        },
+      );
+    } else {
+      createTask.mutate(data, {
+        onSuccess: () => {
+          setOpen(false);
+          form.reset();
+        },
+      });
+    }
   };
+
+  const isPending = createTask.isPending || updateTask.isPending;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className="h-8">
-          <Plus className="mr-1 h-3 w-3" />
-          Add Task
-        </Button>
+        {trigger || (
+          <Button size="sm" variant="outline" className="h-8">
+            <Plus className="mr-1 h-3 w-3" />
+            Add Task
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="font-display">Add Task</DialogTitle>
+          <DialogTitle className="font-display">
+            {isEditing ? "Edit Task" : "Add Task"}
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -119,14 +147,14 @@ export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
                   <FormLabel>Assign To</FormLabel>
                   <Select
                     onValueChange={(val) => field.onChange(val)}
-                    value={field.value?.toString()}
+                    value={field.value?.toString() || ""}
                   >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select team member" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="bg-white">
                       {users?.map((user) => (
                         <SelectItem key={user.id} value={user.id as string}>
                           {user.fullName} ({user.role})
@@ -140,11 +168,9 @@ export function CreateTaskDialog({ projectId }: CreateTaskDialogProps) {
             />
 
             <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={createTask.isPending}>
-                {createTask.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Create Task
+              <Button type="submit" disabled={isPending}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isEditing ? "Update Task" : "Create Task"}
               </Button>
             </div>
           </form>

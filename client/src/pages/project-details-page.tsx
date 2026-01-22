@@ -1,6 +1,6 @@
 import { useRoute, useLocation } from "wouter";
 import { useProject } from "@/hooks/use-projects";
-import { useTasks, useUpdateTask } from "@/hooks/use-tasks";
+import { useDeleteTask, useTasks, useUpdateTask } from "@/hooks/use-tasks";
 import { Sidebar } from "@/components/layout-sidebar";
 import { CreateTaskDialog } from "@/components/create-task-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,7 +25,18 @@ import {
   AlertCircle,
   Loader2,
   ArrowLeft,
+  Edit2,
+  Trash2,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function ProjectDetailsPage() {
   const [, params] = useRoute("/projects/:id");
@@ -49,6 +60,9 @@ export default function ProjectDetailsPage() {
 
   const [resolveNote, setResolveNote] = useState("");
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
+  const deleteTask = useDeleteTask();
 
   // Handle loading state
   if (loadingProject || loadingTasks) {
@@ -151,8 +165,24 @@ export default function ProjectDetailsPage() {
     );
   };
 
+  const handleDeleteClick = (taskId: string) => {
+    setTaskToDelete(taskId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (taskToDelete) {
+      deleteTask.mutate(taskToDelete, {
+        onSuccess: () => {
+          setDeleteDialogOpen(false);
+          setTaskToDelete(null);
+        },
+      });
+    }
+  };
+
   const isManager =
-    user?._id?.toString() === project.managerId || user?.role === "admin";
+    user?._id?.toString() === project.managerId && user?.role === "moderator";
   const isUser = user?.role === "user";
 
   return (
@@ -338,9 +368,23 @@ export default function ProjectDetailsPage() {
                           </div>
                         )}
 
-                        {/* Manager: Can verify & close */}
+                        {/* Manager: Can edit, verify & close */}
                         {isManager && (
                           <>
+                            {(task.status === "open" ||
+                              task.status === "in_progress") && (
+                              <CreateTaskDialog
+                                projectId={projectId}
+                                task={task}
+                                trigger={
+                                  <Button size="sm" variant="outline">
+                                    <Edit2 className="w-4 h-4 mr-2" />
+                                    Edit
+                                  </Button>
+                                }
+                              />
+                            )}
+
                             {task.status === "resolved" && (
                               <Button
                                 size="sm"
@@ -372,6 +416,18 @@ export default function ProjectDetailsPage() {
                           </>
                         )}
                       </div>
+                      {isManager && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDeleteClick(task.id as string)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   ))
                 )}
@@ -380,6 +436,27 @@ export default function ProjectDetailsPage() {
           </Card>
         </div>
       </main>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this task? This action cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex justify-end gap-4">
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteTask.isPending}
+            >
+              {deleteTask.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

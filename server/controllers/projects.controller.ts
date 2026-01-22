@@ -57,3 +57,76 @@ export const getProject = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const updateProject = async (req: Request, res: Response) => {
+  try {
+    const user = req.user as any;
+    const { id } = req.params;
+    const input = api.projects.update.input.parse(req.body);
+
+    const project = await storage.getProject(id as string);
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    // Check authorization: only moderator who created it can update (not admin)
+    const isManager =
+      user.role === ROLES.MODERATOR &&
+      project.managerId === user._id.toString();
+
+    if (!isManager) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to update this project" });
+    }
+
+    const updatedProject = await storage.updateProject(id as string, input);
+
+    if (!updatedProject) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    res.json(updatedProject);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("validation")) {
+      res.status(400).json({ message: "Validation error" });
+    } else {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+};
+
+export const deleteProject = async (req: Request, res: Response) => {
+  try {
+    const user = req.user as any;
+    const { id } = req.params;
+
+    const project = await storage.getProject(id as string);
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    // Check authorization: only moderator who created it can delete (not admin)
+    const isManager =
+      user.role === ROLES.MODERATOR &&
+      project.managerId === user._id.toString();
+
+    if (!isManager) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to delete this project" });
+    }
+
+    const deleted = await storage.deleteProject(id as string);
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    res.json({ message: "Project deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

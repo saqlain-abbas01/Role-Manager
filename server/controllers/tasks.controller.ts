@@ -37,8 +37,27 @@ export const createTask = async (req: Request, res: Response) => {
 
 export const updateTask = async (req: Request, res: Response) => {
   try {
+    const user = req.user as any;
     const { id } = req.params;
     const input = req.body;
+
+    const task = await storage.updateTask(id as string, input);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    // Check authorization: only moderator who created the task's project or assigned user can update (not admin)
+    const project = await storage.getProject(task.projectId);
+    const isAuthorized =
+      (user.role === ROLES.MODERATOR &&
+        project?.managerId === user._id.toString()) ||
+      task.assignedToId === user._id.toString();
+
+    if (!isAuthorized) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to update this task" });
+    }
 
     const updated = await storage.updateTask(id as string, input);
     if (!updated) {
@@ -46,6 +65,41 @@ export const updateTask = async (req: Request, res: Response) => {
     }
 
     res.json(updated);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const deleteTask = async (req: Request, res: Response) => {
+  try {
+    const user = req.user as any;
+    const { id } = req.params;
+
+    const task = await storage.updateTask(id as string, {});
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    // Check authorization: only moderator who created the task's project or assigned user can delete (not admin)
+    const project = await storage.getProject(task.projectId);
+    const isAuthorized =
+      (user.role === ROLES.MODERATOR &&
+        project?.managerId === user._id.toString()) ||
+      task.assignedToId === user._id.toString();
+
+    if (!isAuthorized) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to delete this task" });
+    }
+
+    const deleted = await storage.deleteTask(id as string);
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    res.json({ message: "Task deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
   }
